@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <title>Admin EventPass - Ubicaciones</title>
+    <style>
+        .sidebar {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #495057;
+            color: white;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #3c4247;
+        }
+
+        .location-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar d-flex" style="min-height: 100vh;">
+
+        <nav class="bg-dark text-white flex-shrink-0 p-3 sidebar" style="width: 300px;">
+            <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <span class="fs-4">EventPass Admin</span>
+            </a>
+            <hr>
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li><a th:href="@{/admin/dashboard}" class="nav-link text-white">Estadísticas</a></li>
+                <li><a th:href="@{/admin/eventos}" class="nav-link text-white">Eventos</a></li>
+                <li><a th:href="@{/admin/categorias}" class="nav-link text-white">Categorías</a></li>
+                <li><a th:href="@{/admin/ubicaciones}" class="nav-link text-white active">Ubicaciones</a></li>
+                <li><a th:href="@{/admin/asistentes}" class="nav-link text-white">Asistentes</a></li>
+            </ul>
+        </nav>
+
+        <div class="flex-grow-1 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Ubicaciones</h2>
+                <a class="btn btn-primary" th:href="@{/admin/ubicaciones/nuevo}">Nueva</a>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4" th:each="u : ${ubicaciones}">
+                    <div class="card location-card">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${u.nombre}">Nombre Ubicación</h5>
+                            <p class="card-text mb-1"><strong>Dirección:</strong> <span th:text="${u.direccion}"></span>
+                            </p>
+                            <p class="card-text mb-2"><strong>Capacidad:</strong> <span th:text="${u.capacidad}"></span>
+                            </p>
+                            <div class="d-flex justify-content-between mt-3">
+                                <a class="btn btn-warning btn-sm"
+                                    th:href="@{/admin/ubicaciones/editar/{id}(id=${u.id})}">Editar</a>
+                                <button type="button" class="btn btn-danger btn-sm"
+                                        th:onclick="prepareDelete([[${u.id}]], [[${u.nombre}]])"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteConfirmModal">
+                                    Borrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmar Eliminación
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="fs-5">¿Estás seguro de que deseas eliminar la ubicación <strong><span id="locationNameSpan"></span></strong>?</p>
+                    <p class="text-muted small">Esta acción podría afectar a los eventos vinculados. Asegúrate de que no haya actividades programadas aquí antes de proceder.</p>
+                </div>
+                <div class="modal-footer border-0 pb-4 justify-content-center">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <a id="confirmDeleteBtn" href="#" class="btn btn-danger px-4 shadow-sm">Eliminar Ubicación</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function prepareDelete(id, nombre) {
+            document.getElementById('locationNameSpan').innerText = nombre;
+
+            const deleteUrl = '/admin/ubicaciones/borrar/' + id;
+
+            document.getElementById('confirmDeleteBtn').setAttribute('href', deleteUrl);
+        }
+    </script>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+
+</html>

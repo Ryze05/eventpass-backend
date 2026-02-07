@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <title>Dashboard</title>
+
+    <style>
+        .stat-card {
+            border-radius: 12px;
+            padding: 20px;
+            background: #f8f9fa;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .3);
+        }
+
+        .sidebar {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #495057;
+            color: white;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #3c4247;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="d-flex" style="min-height:100vh">
+
+        <nav class="bg-dark text-white flex-shrink-0 p-3 sidebar" style="width: 300px;">
+            <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <span class="fs-4">EventPass Admin</span>
+            </a>
+            <hr>
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li><a th:href="@{/admin/dashboard}" class="nav-link text-white active">Estadísticas</a></li>
+                <li><a th:href="@{/admin/eventos}" class="nav-link text-white">Eventos</a></li>
+                <li><a th:href="@{/admin/categorias}" class="nav-link text-white">Categorías</a></li>
+                <li><a th:href="@{/admin/ubicaciones}" class="nav-link text-white">Ubicaciones</a></li>
+                <li><a th:href="@{/admin/asistentes}" class="nav-link text-white">Asistentes</a></li>
+            </ul>
+        </nav>
+
+        <div class="flex-grow-1 p-4">
+
+            <h2 class="mb-4">Estadisticas</h2>
+
+            <div class="row mb-4">
+                <div class="col-md-3" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalEventos">
+                    <div class="stat-card text-center bg-light">
+                        <h3 th:text="${totalEventos}"></h3>
+                        <p class="text-muted">
+                            <i class="bi bi-calendar3 me-2"></i>Total Eventos
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-3" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalAsistentes">
+                    <div class="stat-card text-center bg-light">
+                        <h3 th:text="${totalAsistentes}"></h3>
+                        <p class="text-muted">
+                            <i class="bi bi-people me-2"></i>Asistentes Totales
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-3" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalFuturos">
+                    <div class="stat-card text-center bg-light">
+                        <h3 th:text="${eventosFuturos}"></h3>
+                        <p class="text-muted">
+                            <i class="bi bi-clock-history me-2"></i>Próximos eventos
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-3" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalPasados">
+                    <div class="stat-card text-center bg-light">
+                        <h3 th:text="${eventosPasados}"></h3>
+                        <p class="text-muted">
+                            <i class="bi bi-check2-circle me-2"></i>Eventos finalizados
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="stat-card d-flex justify-content-around align-items-center py-3 bg-white">
+                        <span class="fw-bold text-muted small text-uppercase">Acciones Rápidas:</span>
+                        <a th:href="@{/admin/eventos/nuevo}" class="btn btn-sm btn-outline-dark rounded-pill">
+                            <i class="bi bi-plus-circle me-1"></i> Nuevo Evento
+                        </a>
+                        <a th:href="@{/admin/categorias/nuevo}" class="btn btn-sm btn-outline-dark rounded-pill">
+                            <i class="bi bi-geo-alt me-1"></i> Nueva Categoria
+                        </a>
+                        <a th:href="@{/admin/ubicaciones/nuevo}" class="btn btn-sm btn-outline-dark rounded-pill">
+                            <i class="bi bi-geo-alt me-1"></i> Nueva Ubicación
+                        </a>
+                        <a th:href="@{/admin/asistentes/nuevo}" class="btn btn-sm btn-outline-dark rounded-pill">
+                            <i class="bi bi-person-plus me-1"></i> Registrar Asistente
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-5 stat-card">
+                    <h4 class="mb-3">Eventos más populares</h4>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                            th:each="e, iterStat : ${topEventos}" style="cursor: pointer;" data-bs-toggle="modal"
+                            th:data-bs-target="'#modalAsistentesEvento' + ${e.first.id}">
+
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center me-3 fw-bold shadow-sm"
+                                    style="width: 30px; height: 30px; font-size: 0.9rem;" th:text="${iterStat.count}">
+                                    1
+                                </div>
+
+                                <span th:text="${e.first.titulo}" class="fw-bold"></span>
+
+                                <span th:if="${e.second >= e.first.ubicacion.capacidad}"
+                                    class="badge rounded-pill bg-danger ms-2" style="font-size: 0.7rem;">
+                                    LLENO
+                                </span>
+                            </div>
+
+                            <span class="badge bg-secondary rounded-pill">
+                                <span th:text="${e.second}"></span> asistentes
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-7">
+                    <div class="stat-card mt-4">
+                        <h4 class="mb-3">Gráfico de Popularidad</h4>
+                        <canvas id="topEventsChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="stat-card h-100">
+                        <h4 class="mb-3">Distribución por Categoría</h4>
+                        <div style="height: 250px;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="stat-card h-100 p-4">
+                        <h4 class="mb-4 text-muted small text-uppercase fw-bold border-bottom pb-2">
+                            <i class="bi bi-clock-history me-2"></i>Últimos Registros
+                        </h4>
+                        <div class="list-group list-group-flush">
+                            <div th:each="a : ${ultimosAsistentes}"
+                                class="list-group-item px-0 border-0 mb-2 bg-transparent">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center me-3 shadow-sm"
+                                        style="width: 45px; height: 45px;">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0 fw-bold" th:text="${a.nombre}">Nombre</h6>
+                                        <small class="text-muted">
+                                            Asistirá a: <span class="fw-bold text-dark"
+                                                th:text="${a.evento?.titulo ?: 'Evento desconocido'}"></span>
+                                        </small>
+                                    </div>
+                                    <span
+                                        class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">
+                                        Nuevo
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div th:if="${#lists.isEmpty(ultimosAsistentes)}" class="text-center py-5">
+                                <i class="bi bi-person-dash text-muted fs-1"></i>
+                                <p class="text-muted mt-2">No hay actividad reciente.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="modalEventos" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">Eventos</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Título</th>
+                                <th>Fecha</th>
+                                <th>Categoría</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="event : ${todosLosEventos}">
+                                <td th:text="${event.titulo}" class="fw-bold"></td>
+                                <td th:text="${#temporals.format(event.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${event.categoria?.nombre}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalAsistentes" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">Asistentes</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Evento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="a : ${todosLosAsistentes}">
+                                <td th:text="${a.nombre}" class="fw-bold"></td>
+                                <td th:text="${a.email}"></td>
+                                <td th:text="${a.evento?.titulo}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalFuturos" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">Próximos Eventos</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Título</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="e : ${listaFuturos}">
+                                <td th:text="${e.titulo}" class="fw-bold"></td>
+                                <td th:text="${#temporals.format(e.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td><span class="badge bg-secondary">Próximos eventos</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalPasados" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">Eventos Finalizados</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Título</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="e : ${listaPasados}">
+                                <td th:text="${e.titulo}" class="fw-bold"></td>
+                                <td th:text="${#temporals.format(e.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td><span class="badge bg-secondary">Finalizado</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:each="e : ${topEventos}" th:id="'modalAsistentesEvento' + ${e.first.id}" class="modal fade" tabindex="-1"
+        aria-hidden="true">
+
+        <div class="modal-dialog modal-md modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">
+                        Asistentes: <span th:text="${e.first.titulo}"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div th:classappend="${e.second >= e.first.ubicacion.capacidad} ? 'alert-danger' : 'alert-info'"
+                        class="alert py-2 d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="bi bi-people-fill me-2"></i>
+                            Estado del Aforo:
+                        </span>
+                        <span class="fw-bold">
+                            <span th:text="${e.second}"></span> / <span th:text="${e.first.ubicacion.capacidad}"></span>
+                        </span>
+                    </div>
+
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th class="text-end">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="asistente : ${todosLosAsistentes}"
+                                th:if="${asistente.evento?.id == e.first.id}">
+                                <td th:text="${asistente.nombre}"></td>
+                                <td th:text="${asistente.email}"></td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-link text-danger p-0 border-0"
+                                        th:onclick="prepareDeleteAsistente([[${asistente.id}]], [[${asistente.nombre}]])"
+                                        data-bs-toggle="modal" data-bs-target="#confirmarBorradoAsistenteModal">
+                                        <i class="bi bi-trash fs-5"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div th:if="${e.second == 0}" class="text-center py-3">
+                        <p class="text-muted">No hay asistentes registrados aún.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmarBorradoAsistenteModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white">
+                    <h6 class="modal-title fw-bold">Confirmar cancelación</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p class="mb-1">¿Eliminar a <strong><span id="nombreAsistenteBorrar"></span></strong>?</p>
+                    <small class="text-muted">Esta acción no se puede deshacer.</small>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-center">
+                    <button type="button" class="btn btn-light btn-sm px-3" data-bs-dismiss="modal">No, volver</button>
+                    <a id="linkBorrarAsistente" href="#" class="btn btn-danger btn-sm px-3 shadow-sm">Sí, eliminar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const topEventos = [[${ topEventos }]];
+
+        const labels = topEventos ? topEventos.map(e => e.first.titulo) : [];
+        const dataCounts = topEventos ? topEventos.map(e => e.second) : [];
+
+        const ctx = document.getElementById('topEventsChart').getContext('2d');
+
+        if (labels.length > 0) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Número de Asistentes',
+                        data: dataCounts,
+                        backgroundColor: [
+                            'rgba(33, 37, 41, 0.95)',
+                            'rgba(52, 58, 64, 0.85)',
+                            'rgba(73, 80, 87, 0.75)',
+                            'rgba(108, 117, 125, 0.65)',
+                            'rgba(173, 181, 189, 0.55)'
+                        ],
+                        borderColor: [
+                            '#212529',
+                            '#343a40',
+                            '#495057',
+                            '#6c757d',
+                            '#adb5bd'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 5,
+                        barPercentage: 0.5,
+                        categoryPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: Math.max(...dataCounts) + 1,
+                            ticks: { stepSize: 1 }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        const catData = [[${ asistentesPorCategoria }]];
+        const catLabels = Object.keys(catData);
+        const catCounts = Object.values(catData);
+
+        const ctxCat = document.getElementById('categoryChart').getContext('2d');
+        new Chart(ctxCat, {
+            type: 'doughnut',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catCounts,
+                    backgroundColor: [
+                        'rgba(33, 37, 41, 0.9)',
+                        'rgba(73, 80, 87, 0.8)',
+                        'rgba(108, 117, 125, 0.7)',
+                        'rgba(173, 181, 189, 0.6)',
+                        'rgba(222, 226, 230, 0.5)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 20 }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+
+        function prepareDeleteAsistente(id, nombre) {
+            document.getElementById('nombreAsistenteBorrar').innerText = nombre;
+
+            const urlBorrar = '/admin/asistentes/borrar/' + id;
+
+            document.getElementById('linkBorrarAsistente').setAttribute('href', urlBorrar);
+        }
+
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

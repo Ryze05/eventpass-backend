@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <title>Admin EventPass - Asistentes</title>
+
+    <style>
+        .sidebar {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #495057;
+            color: white;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #3c4247;
+        }
+
+        .asistente-card {
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .asistente-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .3);
+        }
+
+        .badge-evento {
+            background: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="d-flex" style="min-height:100vh">
+        <nav class="bg-dark text-white flex-shrink-0 p-3 sidebar" style="width:300px">
+
+            <span class="fs-4">EventPass Admin</span>
+            <hr>
+
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li><a th:href="@{/admin/dashboard}" class="nav-link text-white">Estadísticas</a></li>
+                <li><a th:href="@{/admin/eventos}" class="nav-link text-white">Eventos</a></li>
+                <li><a th:href="@{/admin/categorias}" class="nav-link text-white">Categorías</a></li>
+                <li><a th:href="@{/admin/ubicaciones}" class="nav-link text-white">Ubicaciones</a></li>
+                <li><a th:href="@{/admin/asistentes}" class="nav-link text-white active">Asistentes</a></li>
+            </ul>
+        </nav>
+
+        <div class="flex-grow-1 p-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Asistentes</h2>
+                <a class="btn btn-primary" th:href="@{/admin/asistentes/nuevo}">
+                    Nuevo Asistente
+                </a>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4" th:each="a : ${asistentes}">
+                    <div class="card asistente-card">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${a.nombre}"></h5>
+
+                            <p class="card-text mb-1">
+                                <strong>Email:</strong>
+                                <span th:text="${a.email}"></span>
+                            </p>
+
+                            <p class="card-text mb-1">
+                                <strong>Teléfono:</strong>
+                                <span th:text="${a.telefono != '' ? a.telefono : 'Sin teléfono'}"></span>
+                            </p>
+
+                            <span class="badge badge-evento mb-3 d-inline-block"
+                                th:text="${a.evento != null ? a.evento.titulo : 'Sin evento'}">
+                            </span>
+
+                            <div class="d-flex justify-content-between mt-3">
+                                <a class="btn btn-warning btn-sm"
+                                    th:href="@{/admin/asistentes/editar/{id}(id=${a.id})}">
+                                    Editar
+                                </a>
+                                <button type="button" class="btn btn-danger btn-sm"
+                                        th:onclick="prepareDelete([[${a.id}]], [[${a.nombre}]])"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteConfirmModal">
+                                    Borrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmar Eliminación
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="fs-5">¿Estás seguro de que deseas eliminar permanentemente a <strong><span id="asistenteNameSpan"></span></strong>?</p>
+                    <p class="text-muted small">Esta acción revocará su acceso al evento y no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer border-0 pb-4 justify-content-center">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <a id="confirmDeleteBtn" href="#" class="btn btn-danger px-4 shadow-sm">Eliminar Asistente</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function prepareDelete(id, nombre) {
+            document.getElementById('asistenteNameSpan').innerText = nombre;
+
+            const deleteUrl = '/admin/asistentes/borrar/' + id;
+
+            document.getElementById('confirmDeleteBtn').setAttribute('href', deleteUrl);
+        }
+    </script>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+
+</html>

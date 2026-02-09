@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <title>Formulario Ubicación</title>
+    <style>
+        .sidebar {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #495057;
+            color: white;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #3c4247;
+        }
+
+        .form-card {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-card h3 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="d-flex" style="min-height: 100vh;">
+
+        <nav class="bg-dark text-white flex-shrink-0 p-3 sidebar" style="width: 300px;">
+            <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <span class="fs-4">EventPass Admin</span>
+            </a>
+            <hr>
+            <ul class="nav nav-pills flex-column mb-auto">
+                <li><a th:href="@{/admin/dashboard}" class="nav-link text-white">Estadísticas</a></li>
+                <li><a th:href="@{/admin/eventos}" class="nav-link text-white">Eventos</a></li>
+                <li><a th:href="@{/admin/categorias}" class="nav-link text-white">Categorías</a></li>
+                <li><a th:href="@{/admin/ubicaciones}" class="nav-link text-white active">Ubicaciones</a></li>
+                <li><a th:href="@{/admin/asistentes}" class="nav-link text-white">Asistentes</a></li>
+            </ul>
+        </nav>
+
+        <div class="flex-grow-1 p-4">
+            <div class="form-card">
+                <h3 th:text="${ubicacion.id != 0} ? 'Editar Ubicación' : 'Nueva Ubicación'">Nueva Ubicación</h3>
+
+                <form th:action="@{/admin/ubicaciones/guardar}" th:object="${ubicacion}" method="post">
+
+                    <input type="hidden" th:field="*{id}" />
+
+                    <input type="hidden" name="referer" th:value="${referer}">
+
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" id="nombre" th:field="*{nombre}" class="form-control"
+                            placeholder="Nombre de la ubicación" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label">Dirección</label>
+                        <input type="text" id="direccion" th:field="*{direccion}" class="form-control"
+                            placeholder="Dirección de la ubicación" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="capacidad" class="form-label">Capacidad</label>
+                        <input type="number" id="capacidad" th:field="*{capacidad}" class="form-control"
+                            placeholder="Capacidad de la ubicación" min="0" required>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a th:href="${referer != null ? referer : '/admin/ubicaciones'}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+
+</html>
